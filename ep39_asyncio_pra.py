@@ -41,11 +41,10 @@ class Crwalurl():
         session =aiohttp.ClientSession()
         print('starting linking:',url)
         response =await session.get(url)
-        await response.text()
+        data = await response.text()
+        self.responselist.append(data)
         await session.close()
         print("close:",url)
-        print([url,response])
-
 
     async def run(self,page):
         url ='https://static4.scrape.cuiqingcai.com/page/'+str(page)
