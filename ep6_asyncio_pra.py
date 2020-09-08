@@ -19,7 +19,7 @@ class Thread_Parseresponse(threading.Thread):
             html =self.pagequeue.get(False)
             #print(html)
             soup =BeautifulSoup(html,'html.parser')
-            title_list =soup.findall('h2 data-v-7f856186')
+            title_list =soup.findall('h2').get_text()
             #title_list =soup.findall('h2',class_='m-b-sm')
             print(title_list)
             # score_list =soup.findall('p',class_='score m-t-md m-b-n-sm')
@@ -65,7 +65,7 @@ class Crwalurl():
         self.pagequeue =Queue()
 
     async def prase_url(self,url):
-        session =aiohttp.ClientSession()
+        session =aiohttp.ClientSession(headers=self.headers)
         print('starting linking:',url)
         response =await session.get(url)
         data = await response.text()
