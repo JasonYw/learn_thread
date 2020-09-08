@@ -18,7 +18,7 @@ class Threadcrawl(threading.Thread):
             'scheme': 'https',
             'accept': '*/*',
             'accept-language': 'zh-CN,zh;q=0.9',
-            'cookie': '_uuid=86D30ADE-CAD2-106E-EAD4-65AC9DCF3AD302274infoc; buvid3=C8D5E893-BE9D-490E-80CD-6C3340E67146143074infoc; CURRENT_FNVAL=16; rpdid=|(umk)mulYJJ0J\'ulm)u~~kJ|; PVID=1; bsource=search_baidu; bfe_id=6f285c892d9d3c1f8f020adad8bed553; sid=m04trz9n; DedeUserID=15828301; DedeUserID__ckMd5=d4f07937d029b376; SESSDATA=695689c2%2C1614259991%2C9dc4e*81; bili_jct=21b665b0fbaa2da8730d853a567eb44b',
+            #'cookie': #input your cookie
             'referer': 'https://space.bilibili.com/284453579/fans/fans',
             'sec-fetch-dest': 'script',
             'sec-fetch-mode': 'no-cors',
