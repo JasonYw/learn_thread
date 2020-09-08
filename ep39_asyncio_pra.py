@@ -1,4 +1,6 @@
 import asyncio
+from asyncio import tasks
+from cgitb import text
 from wsgiref import headers
 import aiohttp
 import mysql.connector
@@ -35,28 +37,26 @@ class Crwalurl():
         }
         self.responselist =[]
 
-    # @asyncio.coroutine
-    # def save_response(self,response):
-    #     yield from self.responselist.append(response.text)
-
     async def prase_url(self,url):
         session =aiohttp.ClientSession()
         print('starting linking:',url)
         response =await session.get(url)
+        await response.text()
         await session.close()
+        print("close:",url)
+        print([url,response])
 
 
     async def run(self,page):
         url ='https://static4.scrape.cuiqingcai.com/page/'+str(page)
-        self.prase_url(url)
-
-
-
-
+        await self.prase_url(url)
 
 def main():
     test_example =Crwalurl()
-    print(test_example.run())
+    tasks =[asyncio.ensure_future(test_example.run(_)) for _ in range(1,5)]
+    loop =asyncio.get_event_loop()
+    loop.run_until_complete(asyncio.wait(tasks))
+    
 
 
 if __name__ =="__main__":
