@@ -65,7 +65,9 @@ class Thread_Write_toMysql(threading.Thread):
                 date =item['date']
                 connector =mysql.connector.connect(user='root',password='',database='py_write')
                 cursor =connector.cursor()
-                cursor.execute('INSERT INTO db_move'+'(name,score,date) VALUES'+'('+ name +','+ score +','+ date +')')
+                print('INSERT INTO db_move (name,score,date) VALUES (%s,%s,%s)'%(name,score,date))
+                #cursor.execute('INSERT INTO db_move (name,score,date) VALUES (%s,%s,%s)'%(name,score,date))
+                #cursor.execute('INSERT INTO db_move'+'(name,score,date) VALUES'+'('+ name +','+ score +','+ date +')')
                 connector.commit()
         except Exception as e:
             print(e)
