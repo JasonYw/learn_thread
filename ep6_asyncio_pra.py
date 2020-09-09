@@ -30,18 +30,17 @@ class Thread_Parseresponse(threading.Thread):
                 try:
                     score =node.xpath('.//p[contains(@class,"score")]/text()')[0]
                 except:
-                    score=None
+                    score=''
 
                 try:
                     date =node.xpath('.//div[contains(@class,"m-v-sm info")][2]/span/text()')[0]
                 except:
-                    data=''
-                print(date)    
+                    data=''    
                 item ={}
                 item['name'] =title
                 item['score'] =score.replace('\n',"").replace(' ',"")
                 item['date'] =date
-                #print(item)
+                print(item)
                 self.dataqueue.put(item)
             
 
@@ -49,26 +48,23 @@ class Thread_Parseresponse(threading.Thread):
             print(e)
 
 class Thread_Write_toMysql(threading.Thread):
-    def __init__(self,threadname,dataqueue,Lock):
+    def __init__(self,threadname,dataqueue):
         super(Thread_Write_toMysql,self).__init__()
         self.threadname =threadname
         self.dataqueue =dataqueue
-        self.Lock =Lock
-    
+       
     def run(self):
         print(self.threadname,'-starting')
         try:
-            with self.Lock:
-                item =self.dataqueue.get(False)
-                name =item['name']
-                score =item['score']
-                date =item['date']
-                connector =mysql.connector.connect(user='root',password='',database='py_write')
-                cursor =connector.cursor()
-                print('INSERT INTO db_move (name,score,date) VALUES (%s,%s,%s)'%(name,score,date))
-                #cursor.execute('INSERT INTO db_move (name,score,date) VALUES (%s,%s,%s)'%(name,score,date))
-                #cursor.execute('INSERT INTO db_move'+'(name,score,date) VALUES'+'('+ name +','+ score +','+ date +')')
-                connector.commit()
+            item =self.dataqueue.get(False)
+            name =item['name']
+            score =item['score']
+            date =item['date']
+            connector =mysql.connector.connect(user='root',password='0125',database='py_write')
+            cursor =connector.cursor()
+            print('INSERT INTO db_movie (name,score,date) VALUES ("%s",%s,"%s")'%(name,score,date))
+            cursor.execute('INSERT INTO db_movie (name,score,date) VALUES ("%s",%s,"%s")'%(name,score,date))
+            connector.commit()
         except Exception as e:
             print(e)
                 
@@ -99,7 +95,7 @@ class Crwalurl():
         Thread_Write_toMysqlname =['Thread_Write_toMysql1','Thread_Write_toMysql2','Thread_Write_toMysql3','Thread_Write_toMysql4','Thread_Write_toMysql5',]
         junk_Thread_Parseresponse =[]
         junk_Thread_Write_toMysql =[]
-        Lock =threading.Lock()
+        # Lock =threading.Lock()
 
         while not self.pagequeue.empty():
             for thread_ in Thread_Parseresponsename:
@@ -110,10 +106,11 @@ class Crwalurl():
         for thread_ in junk_Thread_Parseresponse:
             thread_.join()
 
-        for thread_ in Thread_Write_toMysqlname:
-            thread =Thread_Write_toMysql(thread_,dataqueue,Lock)
-            thread.start()
-            junk_Thread_Write_toMysql.append(thread)
+        while not dataqueue.empty():
+            for thread_ in Thread_Write_toMysqlname:
+                thread =Thread_Write_toMysql(thread_,dataqueue)
+                thread.start()
+                junk_Thread_Write_toMysql.append(thread)
 
         for  thread_ in junk_Thread_Write_toMysql:
             thread_.join()
@@ -121,7 +118,7 @@ class Crwalurl():
         
 def main():
     test_example =Crwalurl()
-    tasks =[asyncio.ensure_future(test_example.run(_)) for _ in range(1,2)]
+    tasks =[asyncio.ensure_future(test_example.run(_)) for _ in range(1,11)]
     loop =asyncio.get_event_loop()
     loop.run_until_complete(asyncio.wait(tasks))
     test_example.Thread_start()
