@@ -4,6 +4,7 @@ import mysql.connector
 import threading
 from bs4 import BeautifulSoup
 from queue import Queue
+from lxml import etree
 
 
 class Thread_Parseresponse(threading.Thread):
@@ -17,21 +18,33 @@ class Thread_Parseresponse(threading.Thread):
         print(self.threadname,'-starting')
         try:
             html =self.pagequeue.get(False)
-            #print(html)
-            soup =BeautifulSoup(html,'html.parser')
-            title_list =soup.findall('h2').get_text()
-            #title_list =soup.findall('h2',class_='m-b-sm')
-            print(title_list)
-            # score_list =soup.findall('p',class_='score m-t-md m-b-n-sm')
-            # print(score_list)
-            # date_list =soup.findall('span',id='data-v-7f856186')
-            # print(date_list)
-            # for i in range(len(title_list)):
-            #     item ={}
-            #     item['name'] =title_list(i)
-            #     item['score'] =score_list(i)
-            #     item['date'] =date_list(i)
-            #     self.dataqueue.put(item)
+            data =etree.HTML(html)
+            node_list =data.xpath('//div[contains(@class,"el-card item m-t is-hover-shadow")]')
+            print(len(node_list))
+            for node in node_list:
+                try:
+                    title =node.xpath('.//h2/text()')[0]
+                except:
+                    title =''
+
+                try:
+                    score =node.xpath('.//p[contains(@class,"score")]/text()')[0]
+                except:
+                    score=None
+
+                try:
+                    date =node.xpath('.//div[contains(@class,"m-v-sm info")][2]/span/text()')[0]
+                except:
+                    data=''
+                print(date)    
+                item ={}
+                item['name'] =title
+                item['score'] =score.replace('\n',"").replace(' ',"")
+                item['date'] =date
+                #print(item)
+                self.dataqueue.put(item)
+            
+
         except Exception as e:
             print(e)
 
@@ -50,9 +63,9 @@ class Thread_Write_toMysql(threading.Thread):
                 name =item['name']
                 score =item['score']
                 date =item['date']
-                connector =mysql.connector.connect(user='root',password='0125',database='py_write')
+                connector =mysql.connector.connect(user='root',password='',database='py_write')
                 cursor =connector.cursor()
-                cursor.execute('INSERT INTO db_move'+'(name,score,date) VALUES'+'('+name+','+score+','+date+')')
+                cursor.execute('INSERT INTO db_move'+'(name,score,date) VALUES'+'('+ name +','+ score +','+ date +')')
                 connector.commit()
         except Exception as e:
             print(e)
@@ -76,7 +89,7 @@ class Crwalurl():
     async def run(self,page):
         url ='https://static4.scrape.cuiqingcai.com/page/'+str(page)
         await self.prase_url(url)
-        self.Thread_start()
+        
 
     def Thread_start(self):
         dataqueue =Queue()
@@ -95,21 +108,21 @@ class Crwalurl():
         for thread_ in junk_Thread_Parseresponse:
             thread_.join()
 
-        # for thread_ in Thread_Write_toMysqlname:
-        #     thread =Thread_Write_toMysql(thread_,dataqueue,Lock)
-        #     thread.start()
-        #     junk_Thread_Write_toMysql.append(thread)
+        for thread_ in Thread_Write_toMysqlname:
+            thread =Thread_Write_toMysql(thread_,dataqueue,Lock)
+            thread.start()
+            junk_Thread_Write_toMysql.append(thread)
 
-        # for  thread_ in junk_Thread_Write_toMysql:
-        #     thread_.join()
+        for  thread_ in junk_Thread_Write_toMysql:
+            thread_.join()
 
         
 def main():
     test_example =Crwalurl()
-    tasks =[asyncio.ensure_future(test_example.run(_)) for _ in range(1,3)]
+    tasks =[asyncio.ensure_future(test_example.run(_)) for _ in range(1,2)]
     loop =asyncio.get_event_loop()
     loop.run_until_complete(asyncio.wait(tasks))
-    #test_example.Thread_start()
+    test_example.Thread_start()
     
 
 if __name__ =="__main__":
