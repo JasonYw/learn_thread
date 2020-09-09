@@ -1,7 +1,4 @@
 import asyncio
-from asyncio import tasks
-from cgitb import text
-from wsgiref import headers
 import aiohttp
 import mysql.connector
 import threading
@@ -26,7 +23,7 @@ from queue import Queue
 #                     item['name'] =title_list(i)
 #                     item['score'] =score_list(i)
 #                     item['date'] =date_list(i)
-#                     await item
+#                     await item              
 #             except:
 #                 pass
 
@@ -49,12 +46,14 @@ class Crwalurl():
     async def run(self,page):
         url ='https://static4.scrape.cuiqingcai.com/page/'+str(page)
         await self.prase_url(url)
+        return self.responselist()
 
 def main():
     test_example =Crwalurl()
     tasks =[asyncio.ensure_future(test_example.run(_)) for _ in range(1,5)]
     loop =asyncio.get_event_loop()
     loop.run_until_complete(asyncio.wait(tasks))
+    
     
 
 
