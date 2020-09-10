@@ -47,6 +47,7 @@ class Movie(object):
 		self.session = aiohttp.ClientSession(headers = headers)
 		tasks = [asyncio.ensure_future(self.scrape_index(page)) for page in range(11)]
 		results = await asyncio.gather(*tasks)
+		print(results)
 		detail_page_url = await self.parse_index_page(results)
 		print(detail_page_url)
 		await self.session.close()

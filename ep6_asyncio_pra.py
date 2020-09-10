@@ -60,7 +60,7 @@ class Thread_Write_toMysql(threading.Thread):
             name =item['name']
             score =item['score']
             date =item['date']
-            connector =mysql.connector.connect(user='root',password='0125',database='py_write')
+            connector =mysql.connector.connect(user='root',password='',database='py_write')
             cursor =connector.cursor()
             print('INSERT INTO db_movie (name,score,date) VALUES ("%s",%s,"%s")'%(name,score,date))
             cursor.execute('INSERT INTO db_movie (name,score,date) VALUES ("%s",%s,"%s")'%(name,score,date))
@@ -83,10 +83,11 @@ class Crwalurl():
         self.pagequeue.put(data)
         await session.close()
         print("close:",url)
+        return response
 
     async def run(self,page):
         url ='https://static4.scrape.cuiqingcai.com/page/'+str(page)
-        await self.prase_url(url)
+        return await self.prase_url(url)
         
 
     def Thread_start(self):
@@ -118,10 +119,24 @@ class Crwalurl():
         
 def main():
     test_example =Crwalurl()
-    tasks =[asyncio.ensure_future(test_example.run(_)) for _ in range(1,11)]
     loop =asyncio.get_event_loop()
+    tasks =[loop.create_task(test_example.run(_)) for _ in range(1,3)]
     loop.run_until_complete(asyncio.wait(tasks))
-    test_example.Thread_start()
+    for task in tasks:
+        print(task.result())
+    loop.close()
+    # for _ in range(1,2):
+    #     coro =test_example.run(_)
+    #     loop =asyncio.get_event_loop()
+    #     task =loop.create_task(coro)
+    #     loop.run_until_complete(task)
+    #     print(task.resault())
+
+    # tasks =[asyncio.ensure_future(test_example.run(_)) for _ in range(1,2)]
+    #loop =asyncio.get_event_loop()
+    #loop.run_until_complete(asyncio.wait(tasks))
+    #print(tasks.resault())
+    # test_example.Thread_start()
     
 
 if __name__ =="__main__":
